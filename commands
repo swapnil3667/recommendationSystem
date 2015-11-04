@@ -1,0 +1,5 @@
+sqoop import --connect jdbc:mysql://localhost/viki --username root --password student --table user_attributes --hive-import --hive-table viki.user_attributes --m 1
+
+hive --service hiveserver2 &
+
+hive --service metastore &

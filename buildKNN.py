@@ -31,7 +31,7 @@ def Generate_KNN(userid):
            seed_country = row[1]
            seed_gender = row[2]
 
-       sql = "SELECT user_id FROM user_attributes where country=" + "'" + seed_country+"' LIMIT 200"
+       sql = "SELECT user_id FROM user_attributes where country=" + "'" + seed_country+"'"
        cursor.execute(sql)
               # Fetch all the rows in a list of lists.
        results = cursor.fetchall()
@@ -42,39 +42,47 @@ def Generate_KNN(userid):
        videoid_col = {}
        ur = 0
        vc = 0
+       print sql
+       qr = ""
        for row in results:
-           sql = "SELECT user_id,video_id, score FROM behavior_training where user_id=" + "'" + row[0]+"'"
+           qr = qr + "or user_id='" + row[0] + "' "
+       query = "SELECT user_id,video_id, score FROM behavior_training where" + qr[2:]
+       print query
+
+      # for row in results:
+        #   sql = "SELECT user_id,video_id, score FROM behavior_training where user_id=" + "'" + row[0]+"'"
          #  print row[0]
-           cursor.execute(sql)
-           resultNew = cursor.fetchall()
-           for data in resultNew:
-                user_id = data[0]
-                video_id = data[1]
-                score = data[2]
 
-                if video_id not in videoid_col:
-                    videoid_col[video_id] = vc
-                    vc = vc+1
+       cursor.execute(query)
+       resultNew = cursor.fetchall()
+       for data in resultNew:
+            user_id = data[0]
+            video_id = data[1]
+            score = data[2]
 
-                if user_id not in userid_row:
-                    userid_row[user_id] = ur
-                    ur = ur+1
+            if video_id not in videoid_col:
+                videoid_col[video_id] = vc
+                vc = vc+1
 
-                if video_id not in videoid:
-                    videoid.append(video_id)
+            if user_id not in userid_row:
+                userid_row[user_id] = ur
+                ur = ur+1
 
-                if user_id not in userid:
-                    userid.append(user_id)
+            if video_id not in videoid:
+                videoid.append(video_id)
 
-                if user_id in d:
-                     tempd = d[user_id]
-                     tempd[video_id] = score
-                     d[user_id] = tempd
-                     videoid.append(video_id)
-                else:
-                     tempd = {}
-                     tempd[video_id] = score
-                     d[user_id] = tempd
+            if user_id not in userid:
+                userid.append(user_id)
+
+            if user_id in d:
+                 tempd = d[user_id]
+                 tempd[video_id] = score
+                 d[user_id] = tempd
+                 videoid.append(video_id)
+            else:
+                 tempd = {}
+                 tempd[video_id] = score
+                 d[user_id] = tempd
 
 
        #print d

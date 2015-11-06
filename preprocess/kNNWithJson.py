@@ -10,6 +10,7 @@ def Generate_KNN(userid):
     cursor = db.cursor()
 
     # Prepare SQL query to INSERT a record into the database.
+    query_user = userid
     sql = "SELECT * FROM user_attributes where user_id=" + "'" + userid+"'"
     try:
        cursor.execute(sql)
@@ -72,8 +73,17 @@ def Generate_KNN(userid):
        Sparse_Matrix = [[0 for x in range(len(videoid))] for x in range(len(userid))]
        print len(Sparse_Matrix)
        print len(Sparse_Matrix[0])
-       print videoid
-       print userid
+       print videoid_col
+       print userid_row
+       f = open("user_row.json", 'w')
+       jsonString = json.dumps(userid_row, indent=4, sort_keys=True)
+       f.write(jsonString)
+       f.close()
+       f = open("videoid_col.json", 'w')
+       jsonString = json.dumps(videoid_col, indent=4, sort_keys=True)
+       f.write(jsonString)
+       f.close()
+
        for row in results:
            user_id = row[0]
            if user_id in json_data:
@@ -84,7 +94,18 @@ def Generate_KNN(userid):
                   col_no = videoid_col[tvv]
                #       print col_no
                   Sparse_Matrix[row_no][col_no] = int(tv_video[tvv].rstrip())
+       queryuser = []
+       for num in range(len(Sparse_Matrix[0])):
+           queryuser.append(0)
 
+       if query_user in json_data:
+               tv_video = json_data[query_user]
+               for tvv in tv_video:
+                   col_no = videoid_col[tvv]
+                   queryuser[col_no] = int(tv_video[tvv].rstrip())
+
+       print "query user row", query_user
+       print queryuser
        with open('result_user_9.out', 'w') as f:
            pickle.dump(Sparse_Matrix, f)
        for row in Sparse_Matrix:

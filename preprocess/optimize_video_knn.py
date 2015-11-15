@@ -1,24 +1,24 @@
-import MySQLdb
+#import MySQLdb
 import json
 import pickle
 
 def Generate_KNN(userid):
     # Open database connection
-    db = MySQLdb.connect("localhost","root","student","viki" )
+#    db = MySQLdb.connect("localhost","root","student","viki" )
 
     # prepare a cursor object using cursor() method
-    cursor = db.cursor()
+#    cursor = db.cursor()
 
     # Prepare SQL query to INSERT a record into the database.
     query_user = userid
 
 
-    fobj = open("video_id_relevant_rating_3_key.json", 'rU')
+    fobj = open("/home/swapnil/Documents/KDD/viki_recommendation/video_id_relevant_rating_3_key.json", 'rU')
     print "2"
     json_video_data = json.loads(fobj.read())
     print "Finished up to here"
     fobj.close()
-    fobj1 = open("result488.json", 'rU')
+    fobj1 = open("/home/swapnil/Documents/KDD/viki_recommendation/behavior_training.json", 'rU')
     print "2"
     json_data = json.loads(fobj1.read())
     print "Finished up to here"
@@ -29,28 +29,25 @@ def Generate_KNN(userid):
           for tvv in tv_video:
               video_seen_by_user.append(tvv)
 
-    userid = []
-    videoid = []
     userid_row = {}
     videoid_col = {}
     ur = 0
     vc = 0
 
     results = []
-    print  len(video_seen_by_user)
+    print  "Length of Video Seen By User",len(video_seen_by_user)
     np =0
     for video in video_seen_by_user:
         print np
         np = np +1
         if video in json_video_data:
             users = json_video_data[video]
-#            print len(users)
             for key in users:
                 results.append(key)
 
 
 
-    print len(results)
+    print "Number of Repeated User's in Neighbourhood",len(results)
     print "Reached Here"
     np = 0
     for user_id in results:
@@ -70,13 +67,7 @@ def Generate_KNN(userid):
                   if user_id not in userid_row:
                        userid_row[user_id] = ur
                        ur = ur+1
-                  '''
-                   if tvvideo not in videoid:
-                       videoid.append(tvvideo)
 
-                   if user_id not in userid:
-                       userid.append(user_id)
-                  '''
     print len(videoid_col)
     print len(userid_row)
     Sparse_Matrix = [[0 for x in range(len(videoid_col))] for x in range(len(userid_row))]
@@ -103,6 +94,7 @@ def Generate_KNN(userid):
               col_no = videoid_col[tvv]
            #       print col_no
               Sparse_Matrix[row_no][col_no] = int(tv_video[tvv].rstrip())
+
     queryuser = []
 
     for num in range(len(Sparse_Matrix[0])):
@@ -124,7 +116,7 @@ def Generate_KNN(userid):
     for row in Sparse_Matrix:
       print row
 
-    db.close()
+#    db.close()
 
 if __name__ == "__main__":
 	with open('query.txt') as f:

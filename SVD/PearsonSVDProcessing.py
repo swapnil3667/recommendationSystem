@@ -1,72 +1,82 @@
-
+__author__ = 'sheenanasim'
+#import scipy.sparse.linalg.svds as svd
 import numpy as np
 from scipy.sparse.linalg import eigen, svds as sparse_svd
+import pprint
 import time
 import json
-import pickle
+from scipy.stats import pearsonr
 
-# Calculating program execution time
 start_time = time.time()
-
 # For printing the complete array values.
 np.set_printoptions(threshold=np.inf)
 
-#Creating File path, to read KNN values.
-userid = '100004';
-KNNType = 'Location';
-filepath = '/Users/sheenanasim/Documents/CS5228/project/'
+#array1 = np.genfromtxt('/Users/sheenanasim/Documents/CS5228/project/knn.csv',delimiter = ",")
+#print type(array1)
+#print array1[1]
+import pickle
 
-print 'userid = ',userid
-print 'KNN Type = ',KNNType
+userid = '9';
+KNNType = 'Video';
+filepath = '/Users/sheenanasim/Documents/CS5228/project/';
 
+
+#with open('/Users/sheenanasim/Documents/CS5228/project/User_9/Location/KNN_9.out', 'r') as f:
 
 with open(filepath+'User_'+userid+'/'+KNNType+"/KNN_"+userid+".out", 'r') as f:
     new_data = pickle.load(f)
 
-#Reading query, row values of the userid to which recommendation has to be done.
 with open(filepath+'User_'+userid+'/'+KNNType+'/'+userid+'.out', 'r') as f1:
-    query = pickle.load(f1) 
+    query = pickle.load(f1)
 query1 = np.array(query)
 
 svdInputMatrix = np.array(new_data,dtype=np.float)
 svdInputList= []
-u,s,vt = sparse_svd(svdInputMatrix)
+for i in range(len(svdInputMatrix)):
+    correlation,p = pearsonr(query1,svdInputMatrix[i])
+    print "correlation = ", correlation
+    if correlation > 0:
+        svdInputList.append(svdInputMatrix[i])
+#print array[1]
+
+svdInputMatrixWithPearson = np.array(svdInputList,dtype=np.float)
+print "new size after corelation check"
+print type(svdInputMatrixWithPearson)
+print svdInputMatrixWithPearson.shape
+u,s,vt = sparse_svd(svdInputMatrixWithPearson)
+"u,s,vt = sparse_svd(svdInputMatrix)"
 print u.shape, s.shape, vt.shape
 print s
 
-#Calculating energy for row elimination
 energy = 0
 for i in range(len(s)):
     energy = energy + (s[i]*s[i])
 energy = (energy * 90)/100
 print energy
-#########################################
-
 
 V = np.transpose(vt)
 print V.shape
+print type(V)
 
-# Query * V
 result = np.dot(query1,V)
 print result
 print result.shape
 
-# ( Query * V) * V transpose
 fresult = np.dot(result,vt)
-#Finding the index of top most 10 values in fresult array.
 index = fresult.argsort()[-10:]
-print "Ascending order video coloumns"
-print index
 
-#Descending order list of videos (coloumn number) of high rating.
+print index
 descRecVideo = index[::-1].tolist()
-print "Descending order video coloumns"
 print descRecVideo
 print fresult[fresult.argsort()[-10:]]
+print fresult[450]
+print fresult[320]
+print fresult[84]
 
-#Finding video id values of coloumns
+
 with open(filepath+'User_'+userid+'/'+KNNType+'/videoid_col_'+userid+'.json', 'r') as videoIdFile:
     videoId = json.load(videoIdFile)
+print type(videoId)
 
 recVideosList = []
 for i in range(len(descRecVideo)):
@@ -75,7 +85,7 @@ for i in range(len(descRecVideo)):
         if value == val:
             recVideosList.insert(i,key)
             break
-print 'video id in desc order before sorting using no of views'
+
 print recVideosList
 
 #recVideosListFile = open(filepath+'User_'+userid+'/'+KNNType+'/user'+userid+'_Top10RecVideos.txt', 'w')
@@ -97,17 +107,20 @@ for i in descRecVideo:
 sortedVideoList = []
 
 print sorted(dictVideoViews)
-
 for key in sorted(dictVideoViews):
+    #print key
+    #print dictVideoViews.get(key);
+    #sortedVideoList.index(i, dictVideoViews.get(key))
     sortedVideoList.append(dictVideoViews.get(key))
 
-# col numbers of video in desc order.
 descRecVideo1 = sortedVideoList[::-1]
 
 
-##############Repetition code to rearrange according to no of views###############
+print sortedVideoList
+  ##############Repetition code to rearrange according to no of views###############
 with open(filepath+'User_'+userid+'/'+KNNType+'/videoid_col_'+userid+'.json', 'r') as videoIdFile1:
     videoId1 = json.load(videoIdFile1)
+    print type(videoId1)
 
 recVideosList1 = []
 for i in range(len(descRecVideo1)):
@@ -117,16 +130,15 @@ for i in range(len(descRecVideo1)):
             recVideosList1.insert(i,key)
             break
 
-print 'decreasing order of rating'
 print recVideosList1
 
-
 recVideosListFile = open(filepath+'User_'+userid+'/'+KNNType+'/user'+userid+'_Top10RecVideos.txt', 'w')
-for i in recVideosList1:
+#pickle.dump(recVideosList,recVideosListFile)
+for i in recVideosList:
     recVideosListFile.write(i+'\n')
 
 end_time = time.time()
 
-print "time in min =", (end_time - start_time)/60 
+print "time in min =", (end_time - start_time)/60
 
 
